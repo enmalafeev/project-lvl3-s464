@@ -20,7 +20,8 @@
     "testURL": "http://localhost/"
   },
   "dependencies": {
-    "@babel/polyfill": "^7.2.5"
+    "@babel/polyfill": "^7.2.5",
+    "bootstrap": "^4.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",
