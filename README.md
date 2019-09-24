@@ -3,4 +3,4 @@
 
 ## Home
 
-messy-measure.surge.sh
+[Link to app](messy-measure.surge.sh)
