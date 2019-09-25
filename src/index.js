@@ -2,11 +2,13 @@ import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@babel/polyfill';
 import validator from 'validator';
+import axios from 'axios';
 import WatchJS from 'melanke-watchjs';
 
 const input = document.querySelector('.form-control');
+const form = document.querySelector('.form-inline');
 const { watch } = WatchJS;
-
+const crossOrigin = 'http://crossorigin.me';
 const state = {
   input: {
     url: '',
@@ -31,4 +33,12 @@ input.addEventListener('input', (e) => {
   } else {
     state.input.isValid = false;
   }
+});
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const link = `${crossOrigin}/${state.input.url}`;
+  axios.get(link)
+    .then(response => console.log(response))
+    .catch(err => console.log(err));
 });
