@@ -14,6 +14,23 @@ const state = {
     url: '',
     isValid: false,
   },
+  xml: {
+    title: '',
+    description: '',
+  },
+};
+
+const parseFeed = (xml) => {
+  const channel = xml.querySelector('channel');
+  const title = channel.querySelector('title').innerHTML;
+  const description = channel.querySelector('description').innerHTML;
+  const items = channel.querySelectorAll('item');
+  const itemsList = [...items].map((item) => {
+    const itemTitle = item.querySelector('title').innerHTML;
+    const itemLink = item.querySelector('link').innerHTML;
+    return { itemTitle, itemLink };
+  });
+  return { title, description, itemsList };
 };
 
 watch(state.input, 'url', () => {
@@ -42,7 +59,10 @@ form.addEventListener('submit', (e) => {
     .then((response) => {
       const domParser = new DOMParser();
       const doc = domParser.parseFromString(`${response.data}`, 'application/xml');
-      console.log(doc);
+      return doc;
+    })
+    .then((xml) => {
+      console.log(parseFeed(xml));
     })
     .catch(err => console.log(err));
 });
