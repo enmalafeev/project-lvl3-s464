@@ -8,7 +8,7 @@ import WatchJS from 'melanke-watchjs';
 const input = document.querySelector('.form-control');
 const form = document.querySelector('.form-inline');
 const { watch } = WatchJS;
-const crossOrigin = 'http://crossorigin.me';
+const crossOrigin = 'http://cors-anywhere.herokuapp.com/';
 const state = {
   input: {
     url: '',
@@ -37,8 +37,12 @@ input.addEventListener('input', (e) => {
 
 form.addEventListener('submit', (e) => {
   e.preventDefault();
-  const link = `${crossOrigin}/${state.input.url}`;
+  const link = `${crossOrigin}${state.input.url}`;
   axios.get(link)
-    .then(response => console.log(response))
+    .then((response) => {
+      const domParser = new DOMParser();
+      const doc = domParser.parseFromString(`${response.data}`, 'application/xml');
+      console.log(doc);
+    })
     .catch(err => console.log(err));
 });
