@@ -7,6 +7,8 @@ import WatchJS from 'melanke-watchjs';
 
 const input = document.querySelector('.form-control');
 const form = document.querySelector('.form-inline');
+const feedsList = document.querySelector('.feeds');
+const linksList = document.querySelector('.links');
 const { watch } = WatchJS;
 const crossOrigin = 'http://cors-anywhere.herokuapp.com/';
 const state = {
@@ -14,7 +16,7 @@ const state = {
     url: '',
     isValid: false,
   },
-  xml: {
+  feed: {
     title: '',
     description: '',
   },
@@ -22,23 +24,24 @@ const state = {
 
 const parseFeed = (xml) => {
   const channel = xml.querySelector('channel');
-  const title = channel.querySelector('title').innerHTML;
-  const description = channel.querySelector('description').innerHTML;
+  const title = channel.querySelector('title').innerHTML.replace('<![CDATA[', '').replace(']]>', '');
+  const description = channel.querySelector('description').innerHTML.replace('<![CDATA[', '').replace(']]>', '');
   const items = channel.querySelectorAll('item');
   const itemsList = [...items].map((item) => {
-    const itemTitle = item.querySelector('title').innerHTML;
+    const itemTitle = item.querySelector('title').innerHTML.replace('<![CDATA[', '').replace(']]>', '');
     const itemLink = item.querySelector('link').innerHTML;
     return { itemTitle, itemLink };
   });
   return { title, description, itemsList };
 };
 
-watch(state.input, 'url', () => {
+watch(state, () => {
   if (state.input.isValid) {
     input.classList.remove('border-danger');
   } else {
     input.classList.add('border-danger');
   }
+  // feedsList.innerHTML = `<li>${state.feed.title}</li><li>${state.feed.description}</li>`;
 });
 
 input.addEventListener('input', (e) => {
@@ -59,10 +62,15 @@ form.addEventListener('submit', (e) => {
     .then((response) => {
       const domParser = new DOMParser();
       const doc = domParser.parseFromString(`${response.data}`, 'application/xml');
+      console.log(doc);
+
       return doc;
     })
-    .then((xml) => {
-      console.log(parseFeed(xml));
+    .then((feed) => {
+      const dataFeed = parseFeed(feed);
+      console.log(dataFeed);
+      state.feed.title = dataFeed.title;
+      state.feed.description = dataFeed.description;
     })
     .catch(err => console.log(err));
 });
