@@ -82,6 +82,7 @@ form.addEventListener('submit', (e) => {
       state.feed.title = dataFeed.title;
       state.feed.description = dataFeed.description;
       state.feed.feedLinks = dataFeed.itemsList;
+      input.value = '';
     })
     .catch(err => console.log(err));
 });
