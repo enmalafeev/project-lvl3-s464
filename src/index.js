@@ -7,8 +7,8 @@ import WatchJS from 'melanke-watchjs';
 
 const input = document.querySelector('.form-control');
 const form = document.querySelector('.form-inline');
-const feedsList = document.querySelector('.feeds');
-const linksList = document.querySelector('.links');
+const links = document.querySelector('.links');
+const feeds = document.querySelector('.feeds');
 const { watch } = WatchJS;
 const crossOrigin = 'http://cors-anywhere.herokuapp.com/';
 const state = {
@@ -19,9 +19,9 @@ const state = {
   feed: {
     title: '',
     description: '',
+    feedLinks: [],
   },
 };
-
 const parseFeed = (xml) => {
   const channel = xml.querySelector('channel');
   const title = channel.querySelector('title').innerHTML.replace('<![CDATA[', '').replace(']]>', '');
@@ -35,13 +35,26 @@ const parseFeed = (xml) => {
   return { title, description, itemsList };
 };
 
-watch(state, () => {
+watch(state, 'input', () => {
   if (state.input.isValid) {
     input.classList.remove('border-danger');
   } else {
     input.classList.add('border-danger');
   }
-  // feedsList.innerHTML = `<li>${state.feed.title}</li><li>${state.feed.description}</li>`;
+});
+
+watch(state.feed, 'title', () => {
+  const feedItem = document.createElement('li');
+  feedItem.classList.add('list-group-item');
+  feedItem.innerHTML = `<h3>${state.feed.title}</h3><span>${state.feed.description}</span>`;
+  feeds.append(feedItem);
+
+  state.feed.feedLinks.forEach((el) => {
+    const link = document.createElement('li');
+    link.classList.add('list-group-item');
+    link.innerHTML = `<a href="${el.itemLink}">${el.itemTitle}</a>`;
+    links.append(link);
+  });
 });
 
 input.addEventListener('input', (e) => {
@@ -57,20 +70,18 @@ input.addEventListener('input', (e) => {
 
 form.addEventListener('submit', (e) => {
   e.preventDefault();
-  const link = `${crossOrigin}${state.input.url}`;
+  const link = `${crossOrigin}${state.input.url}`.trim();
   axios.get(link)
     .then((response) => {
       const domParser = new DOMParser();
       const doc = domParser.parseFromString(`${response.data}`, 'application/xml');
-      console.log(doc);
-
       return doc;
     })
     .then((feed) => {
       const dataFeed = parseFeed(feed);
-      console.log(dataFeed);
       state.feed.title = dataFeed.title;
       state.feed.description = dataFeed.description;
+      state.feed.feedLinks = dataFeed.itemsList;
     })
     .catch(err => console.log(err));
 });
