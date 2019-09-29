@@ -20,6 +20,7 @@ const state = {
     title: '',
     description: '',
     feedLinks: [],
+    subscribedFeeds: [],
   },
 };
 const parseFeed = (xml) => {
@@ -34,6 +35,8 @@ const parseFeed = (xml) => {
   });
   return { title, description, itemsList };
 };
+
+const validateDublicates = url => state.feed.subscribedFeeds.some(el => el === url);
 
 watch(state, 'input', () => {
   if (state.input.isValid) {
@@ -61,6 +64,8 @@ input.addEventListener('input', (e) => {
   state.input.url = e.target.value;
   if (state.input.url === '') {
     state.input.isValid = true;
+  } else if (validateDublicates(state.input.url)) {
+    state.input.isValid = false;
   } else if (validator.isURL(state.input.url)) {
     state.input.isValid = true;
   } else {
@@ -82,6 +87,7 @@ form.addEventListener('submit', (e) => {
       state.feed.title = dataFeed.title;
       state.feed.description = dataFeed.description;
       state.feed.feedLinks = dataFeed.itemsList;
+      state.feed.subscribedFeeds.push(state.input.url);
       input.value = '';
     })
     .catch(err => console.log(err));
