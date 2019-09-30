@@ -55,7 +55,7 @@ watch(state.feed, 'title', () => {
   state.feed.feedLinks.forEach((el) => {
     const link = document.createElement('li');
     link.classList.add('list-group-item');
-    link.innerHTML = `<a href="${el.itemLink}">${el.itemTitle}</a>`;
+    link.innerHTML = `<a href="${el.itemLink}">${el.itemTitle}</a><button style="display:block" class="btn btn-primary">Description</button>`;
     links.append(link);
   });
 });
