@@ -4,6 +4,7 @@ import '@babel/polyfill';
 import validator from 'validator';
 import axios from 'axios';
 import WatchJS from 'melanke-watchjs';
+import $ from 'jquery';
 
 const input = document.querySelector('.form-control');
 const form = document.querySelector('.form-inline');
@@ -55,7 +56,7 @@ watch(state.feed, 'title', () => {
   state.feed.feedLinks.forEach((el) => {
     const link = document.createElement('li');
     link.classList.add('list-group-item');
-    link.innerHTML = `<a href="${el.itemLink}">${el.itemTitle}</a><button style="display:block" class="btn btn-primary">Description</button>`;
+    link.innerHTML = `<a href="${el.itemLink}">${el.itemTitle}</a><button style="display:block" class="btn btn-primary" data-toggle="modal">Description</button>`;
     links.append(link);
   });
 });
@@ -92,3 +93,5 @@ form.addEventListener('submit', (e) => {
     })
     .catch(err => console.log(err));
 });
+
+$('[data-toggle="modal"').on('click', () => console.log('click!'));
