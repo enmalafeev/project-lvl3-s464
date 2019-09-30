@@ -4,7 +4,7 @@ import '@babel/polyfill';
 import validator from 'validator';
 import axios from 'axios';
 import WatchJS from 'melanke-watchjs';
-import $ from 'jquery';
+// import $ from 'jquery';
 
 const input = document.querySelector('.form-control');
 const form = document.querySelector('.form-inline');
@@ -31,8 +31,9 @@ const parseFeed = (xml) => {
   const items = channel.querySelectorAll('item');
   const itemsList = [...items].map((item) => {
     const itemTitle = item.querySelector('title').innerHTML.replace('<![CDATA[', '').replace(']]>', '');
+    const itemDescription = item.querySelector('description').innerHTML.replace('<![CDATA[', '').replace(']]>', '');
     const itemLink = item.querySelector('link').innerHTML;
-    return { itemTitle, itemLink };
+    return { itemTitle, itemDescription, itemLink };
   });
   return { title, description, itemsList };
 };
@@ -56,7 +57,7 @@ watch(state.feed, 'title', () => {
   state.feed.feedLinks.forEach((el) => {
     const link = document.createElement('li');
     link.classList.add('list-group-item');
-    link.innerHTML = `<a href="${el.itemLink}">${el.itemTitle}</a><button style="display:block" class="btn btn-primary" data-toggle="modal">Description</button>`;
+    link.innerHTML = `<a href="${el.itemLink}">${el.itemTitle}</a><button style="display:block" class="btn btn-primary btn__desc">Description</button>`;
     links.append(link);
   });
 });
@@ -81,10 +82,13 @@ form.addEventListener('submit', (e) => {
     .then((response) => {
       const domParser = new DOMParser();
       const doc = domParser.parseFromString(`${response.data}`, 'application/xml');
+      console.log(doc);
       return doc;
     })
     .then((feed) => {
       const dataFeed = parseFeed(feed);
+      console.log(dataFeed);
+
       state.feed.title = dataFeed.title;
       state.feed.description = dataFeed.description;
       state.feed.feedLinks = dataFeed.itemsList;
@@ -93,5 +97,3 @@ form.addEventListener('submit', (e) => {
     })
     .catch(err => console.log(err));
 });
-
-$('[data-toggle="modal"').on('click', () => console.log('click!'));
