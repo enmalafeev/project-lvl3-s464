@@ -4,7 +4,7 @@ import '@babel/polyfill';
 import validator from 'validator';
 import axios from 'axios';
 import WatchJS from 'melanke-watchjs';
-// import $ from 'jquery';
+import $ from 'jquery';
 
 const input = document.querySelector('.form-control');
 const form = document.querySelector('.form-inline');
@@ -62,6 +62,12 @@ watch(state.feed, 'title', () => {
   });
 });
 
+watch(state.feed, 'feedLinks', () => {
+  $('.btn__desc').on('click', () => {
+    $('.modal').modal('show');
+  });
+});
+
 input.addEventListener('input', (e) => {
   state.input.url = e.target.value;
   if (state.input.url === '') {
@@ -87,8 +93,6 @@ form.addEventListener('submit', (e) => {
     })
     .then((feed) => {
       const dataFeed = parseFeed(feed);
-      console.log(dataFeed);
-
       state.feed.title = dataFeed.title;
       state.feed.description = dataFeed.description;
       state.feed.feedLinks = dataFeed.itemsList;
@@ -97,3 +101,6 @@ form.addEventListener('submit', (e) => {
     })
     .catch(err => console.log(err));
 });
+
+// $('.modal').modal('show');
+// $('.btn__desc').on('click', () => console.log('click'));
