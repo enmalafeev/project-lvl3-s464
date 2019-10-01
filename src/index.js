@@ -8,6 +8,7 @@ import $ from 'jquery';
 
 const input = document.querySelector('.form-control');
 const form = document.querySelector('.form-inline');
+const submitBtn = document.querySelector('.submit');
 const links = document.querySelector('.links');
 const feeds = document.querySelector('.feeds');
 const { watch } = WatchJS;
@@ -17,6 +18,9 @@ const state = {
     url: '',
     isValid: false,
   },
+  submitBtn: {
+    submitDisabled: true,
+  },
   feed: {
     title: '',
     description: '',
@@ -24,6 +28,7 @@ const state = {
     subscribedFeeds: [],
   },
 };
+
 const parseFeed = (xml) => {
   const channel = xml.querySelector('channel');
   const title = channel.querySelector('title').innerHTML.replace('<![CDATA[', '').replace(']]>', '');
@@ -41,6 +46,7 @@ const parseFeed = (xml) => {
 const validateDublicates = url => state.feed.subscribedFeeds.some(el => el === url);
 
 watch(state, 'input', () => {
+  submitBtn.disabled = state.submitBtn.submitDisabled;
   if (state.input.isValid) {
     input.classList.remove('border-danger');
   } else {
@@ -63,7 +69,11 @@ watch(state.feed, 'title', () => {
 });
 
 watch(state.feed, 'feedLinks', () => {
-  $('.btn__desc').on('click', () => {
+  $('.btn__desc').on('click', (e) => {
+    console.log($('.modal-body p').text());
+    console.log(state.feed.feedLinks.description);
+
+    // $('.modal-body').first().text(`${item.itemDescription}`);
     $('.modal').modal('show');
   });
 });
@@ -72,12 +82,16 @@ input.addEventListener('input', (e) => {
   state.input.url = e.target.value;
   if (state.input.url === '') {
     state.input.isValid = true;
+    state.submitBtn.submitDisabled = false;
   } else if (validateDublicates(state.input.url)) {
     state.input.isValid = false;
+    state.submitBtn.submitDisabled = true;
   } else if (validator.isURL(state.input.url)) {
     state.input.isValid = true;
+    state.submitBtn.submitDisabled = false;
   } else {
     state.input.isValid = false;
+    state.submitBtn.submitDisabled = true;
   }
 });
 
@@ -88,7 +102,6 @@ form.addEventListener('submit', (e) => {
     .then((response) => {
       const domParser = new DOMParser();
       const doc = domParser.parseFromString(`${response.data}`, 'application/xml');
-      console.log(doc);
       return doc;
     })
     .then((feed) => {
