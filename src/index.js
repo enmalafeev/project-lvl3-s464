@@ -5,6 +5,7 @@ import validator from 'validator';
 import axios from 'axios';
 import WatchJS from 'melanke-watchjs';
 import $ from 'jquery';
+import { uniqueId } from 'lodash';
 
 const app = () => {
   const input = document.querySelector('.form-control');
@@ -36,10 +37,13 @@ const app = () => {
     const description = channel.querySelector('description').innerHTML.replace('<![CDATA[', '').replace(']]>', '');
     const items = channel.querySelectorAll('item');
     const itemsList = [...items].map((item) => {
+      const itemId = uniqueId('#');
       const itemTitle = item.querySelector('title').innerHTML.replace('<![CDATA[', '').replace(']]>', '');
       const itemDescription = item.querySelector('description').innerHTML.replace('<![CDATA[', '').replace(']]>', '');
       const itemLink = item.querySelector('link').innerHTML;
-      return { itemTitle, itemDescription, itemLink };
+      return {
+        itemId, itemTitle, itemDescription, itemLink,
+      };
     });
     return { title, description, itemsList };
   };
@@ -107,6 +111,8 @@ const app = () => {
       })
       .then((feed) => {
         const dataFeed = parseFeed(feed);
+        console.log(dataFeed);
+
         state.feed.title = dataFeed.title;
         state.feed.description = dataFeed.description;
         state.feed.feedLinks = dataFeed.itemsList;
@@ -115,7 +121,6 @@ const app = () => {
       })
       .catch(err => console.log(err));
   });
-
   // $('.modal').modal('show');
   // $('.btn__desc').on('click', () => console.log('click'));
 };
