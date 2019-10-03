@@ -68,19 +68,16 @@ const app = () => {
     state.feed.feedLinks.forEach((el) => {
       const link = document.createElement('li');
       link.classList.add('list-group-item');
-      link.innerHTML = `<a href="${el.itemLink}">${el.itemTitle}</a><button style="display:block" class="btn btn-primary btn__desc">Description</button>`;
+      link.innerHTML = `<a href="${el.itemLink}">${el.itemTitle}</a><button style="display:block" class="btn btn-primary btn__desc" data-toggle="modal" data-target="#showDescription" data-description="${el.itemDescription}">Description</button>`;
       links.append(link);
     });
   });
 
-  watch(state.feed, 'feedLinks', () => {
-    $('.btn__desc').on('click', () => {
-      console.log($('.modal-body p').text());
-      console.log(state.feed.feedLinks.description);
-
-      // $('.modal-body').first().text(`${item.itemDescription}`);
-      $('.modal').modal('show');
-    });
+  $('#showDescription').on('show.bs.modal', (event) => {
+    const button = $(event.relatedTarget);
+    const recipient = button.data('description');
+    const modal = $('#showDescription');
+    modal.find('.modal-body p').text(recipient);
   });
 
   input.addEventListener('input', (e) => {
@@ -111,8 +108,6 @@ const app = () => {
       })
       .then((feed) => {
         const dataFeed = parseFeed(feed);
-        console.log(dataFeed);
-
         state.feed.title = dataFeed.title;
         state.feed.description = dataFeed.description;
         state.feed.feedLinks = dataFeed.itemsList;
@@ -121,8 +116,6 @@ const app = () => {
       })
       .catch(err => console.log(err));
   });
-  // $('.modal').modal('show');
-  // $('.btn__desc').on('click', () => console.log('click'));
 };
 
 app();
