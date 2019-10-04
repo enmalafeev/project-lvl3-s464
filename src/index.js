@@ -5,7 +5,7 @@ import validator from 'validator';
 import axios from 'axios';
 import WatchJS from 'melanke-watchjs';
 import $ from 'jquery';
-import { uniqueId } from 'lodash';
+import _ from 'lodash';
 
 const app = () => {
   const input = document.querySelector('.form-control');
@@ -37,7 +37,7 @@ const app = () => {
     const description = channel.querySelector('description').innerHTML.replace('<![CDATA[', '').replace(']]>', '');
     const items = channel.querySelectorAll('item');
     const itemsList = [...items].map((item) => {
-      const itemId = uniqueId('#');
+      const itemId = _.uniqueId('#');
       const itemTitle = item.querySelector('title').innerHTML.replace('<![CDATA[', '').replace(']]>', '');
       const itemDescription = item.querySelector('description').innerHTML.replace('<![CDATA[', '').replace(']]>', '');
       const itemLink = item.querySelector('link').innerHTML;
