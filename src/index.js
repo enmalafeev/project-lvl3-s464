@@ -32,17 +32,19 @@ const app = () => {
   };
 
   const parseFeed = (xml) => {
-    const channel = xml.querySelector('channel');
+    const domParser = new DOMParser();
+    const doc = domParser.parseFromString(`${xml.data}`, 'application/xml');
+    const channel = doc.querySelector('channel');
     const title = channel.querySelector('title').textContent;
     const description = channel.querySelector('description').textContent;
     const items = channel.querySelectorAll('item');
     const itemsList = [...items].map((item) => {
-      const itemId = _.uniqueId('#');
+      const pubDate = new Date(item.querySelector('pubDate').textContent);
       const itemTitle = item.querySelector('title').textContent;
       const itemDescription = item.querySelector('description').textContent;
       const itemLink = item.querySelector('link').textContent;
       return {
-        itemId, itemTitle, itemDescription, itemLink,
+        pubDate, itemTitle, itemDescription, itemLink,
       };
     });
     return { title, description, itemsList };
@@ -64,13 +66,13 @@ const app = () => {
     feedItem.classList.add('list-group-item');
     feedItem.innerHTML = `<h3>${state.feed.title}</h3><span>${state.feed.description}</span>`;
     feedsNode.append(feedItem);
+  });
 
-    state.feed.feedLinks.forEach((el) => {
-      const link = document.createElement('li');
-      link.classList.add('list-group-item');
-      link.innerHTML = `<a href="${el.itemLink}">${el.itemTitle}</a><button style="display:block" class="btn btn-primary btn__desc" data-toggle="modal" data-target="#showDescription" data-description="${el.itemDescription}">Description</button>`;
-      linksNode.append(link);
-    });
+  watch(state.feed, 'feedLinks', () => {
+    const linksArr = state.feed.feedLinks.map((el) => {
+      return `<li class="list-group-item"><a href="${el.itemLink}">${el.itemTitle}</a><button style="display:block" class="btn btn-primary btn__desc" data-toggle="modal" data-target="#showDescription" data-description="${el.itemDescription}">Description</button></li>`;
+    }).join('');
+    linksNode.innerHTML = linksArr;
   });
 
   $('#showDescription').on('show.bs.modal', (event) => {
@@ -97,44 +99,34 @@ const app = () => {
     }
   });
 
-  const parseUrl = (url) => {
-    const domParser = new DOMParser();
-    const doc = domParser.parseFromString(`${url.data}`, 'application/xml');
-    return doc;
+  const updatePosts = (feeds, lastPubDate) => {
+    axios.get(`${corsOrigin}${feeds}`)
+      .then((response) => {
+        const dataFeed = parseFeed(response);
+        const newPost = dataFeed.itemsList.filter(item => item.pubDate > lastPubDate);
+        const newPostPubDate = _.max(newPost.map(({ pubDate }) => pubDate));
+        state.feed.feedLinks = [...newPost, ...state.feed.feedLinks];
+        setTimeout(() => updatePosts(feeds, newPostPubDate), 5000);
+      }) 
+      .catch(err => console.log(err));
   };
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const link = `${corsOrigin}${state.input.url}`.trim();
     axios.get(link)
-      .then(response => parseUrl(response))
       .then((feed) => {
         const dataFeed = parseFeed(feed);
         state.feed.title = dataFeed.title;
         state.feed.description = dataFeed.description;
-        state.feed.feedLinks = dataFeed.itemsList;
+        state.feed.feedLinks = [...dataFeed.itemsList, ...state.feed.feedLinks];
         state.feed.subscribedFeeds.push(state.input.url);
         input.value = '';
-        // updatePosts(state.feed.subscribedFeeds);
+        const maxPubDate = _.max(dataFeed.itemsList.map(({ pubDate }) => pubDate));
+        setTimeout(() => updatePosts(link, maxPubDate), 5000);
       })
       .catch(err => console.log(err));
   });
-  // const updatePosts = (feeds) => {
-  //   const oldPostList = state.feed.feedLinks;
-  //   feeds.forEach((feedLink) => {
-  //     const newPostList = axios.get(`${corsOrigin}${feedLink}`)
-  //       .then(response => parseUrl(response))
-  //       .then((feed) => {
-  //         const dataFeed = parseFeed(feed);
-  //         const postList = dataFeed.itemsList;
-  //         return postList;
-  //       });
-  //     const newPosts = _.difference(oldPostList, newPostList);
-  //     console.log(newPosts);
-  //   });
-  // console.log(state.feed.feedLinks);
-  // console.log(state.feed.subscribedFeeds);
-  // };
 };
 
 // http://lorem-rss.herokuapp.com/feed?unit=second&interval=5
