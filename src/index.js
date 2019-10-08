@@ -52,12 +52,24 @@ const app = () => {
 
   const validateDublicates = url => state.feed.subscribedFeeds.some(el => el === url);
 
+  const updatePosts = (feeds, lastPubDate) => {
+    axios.get(`${corsOrigin}${feeds}`)
+      .then((response) => {
+        const dataFeed = parseFeed(response);
+        const newPost = dataFeed.itemsList.filter(item => item.pubDate > lastPubDate);
+        const newPostPubDate = _.max(newPost.map(({ pubDate }) => pubDate));
+        state.feed.feedLinks = [...newPost, ...state.feed.feedLinks];
+        setTimeout(() => updatePosts(feeds, newPostPubDate), 5000);
+      })
+      .catch(err => console.log(err));
+  };
+
   watch(state, 'input', () => {
     submitBtn.disabled = state.submitBtn.submitDisabled;
     if (state.input.isValid) {
-      input.classList.remove('border-danger');
+      input.classList.remove('is-invalid');
     } else {
-      input.classList.add('border-danger');
+      input.classList.add('is-invalid');
     }
   });
 
@@ -69,9 +81,7 @@ const app = () => {
   });
 
   watch(state.feed, 'feedLinks', () => {
-    const linksArr = state.feed.feedLinks.map((el) => {
-      return `<li class="list-group-item"><a href="${el.itemLink}">${el.itemTitle}</a><button style="display:block" class="btn btn-primary btn__desc" data-toggle="modal" data-target="#showDescription" data-description="${el.itemDescription}">Description</button></li>`;
-    }).join('');
+    const linksArr = state.feed.feedLinks.map(el => `<li class="list-group-item"><a href="${el.itemLink}">${el.itemTitle}</a><button style="display:block" class="btn btn-primary btn__desc" data-toggle="modal" data-target="#showDescription" data-description="${el.itemDescription}">Description</button></li>`).join('');
     linksNode.innerHTML = linksArr;
   });
 
@@ -99,18 +109,6 @@ const app = () => {
     }
   });
 
-  const updatePosts = (feeds, lastPubDate) => {
-    axios.get(`${corsOrigin}${feeds}`)
-      .then((response) => {
-        const dataFeed = parseFeed(response);
-        const newPost = dataFeed.itemsList.filter(item => item.pubDate > lastPubDate);
-        const newPostPubDate = _.max(newPost.map(({ pubDate }) => pubDate));
-        state.feed.feedLinks = [...newPost, ...state.feed.feedLinks];
-        setTimeout(() => updatePosts(feeds, newPostPubDate), 5000);
-      }) 
-      .catch(err => console.log(err));
-  };
-
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const link = `${corsOrigin}${state.input.url}`.trim();
@@ -129,5 +127,4 @@ const app = () => {
   });
 };
 
-// http://lorem-rss.herokuapp.com/feed?unit=second&interval=5
 app();
