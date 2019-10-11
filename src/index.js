@@ -19,11 +19,8 @@ const app = () => {
   const state = {
     input: {
       url: '',
-      isValid: false,
     },
-    submitBtn: {
-      submitDisabled: true,
-    },
+    formState: 'empty',
     feed: {
       title: '',
       description: '',
@@ -46,12 +43,14 @@ const app = () => {
       .catch(err => console.log(err));
   };
 
-  watch(state, 'input', () => {
-    submitBtn.disabled = state.submitBtn.submitDisabled;
-    if (state.input.isValid) {
-      input.classList.remove('is-invalid');
-    } else {
+  watch(state, 'formState', () => {
+    submitBtn.disabled = state.formState !== 'valid';
+    input.disabled = state.formState === 'pending';
+    input.value = state.formState === 'empty' ? '' : input.value;
+    if (state.formState === 'invalid') {
       input.classList.add('is-invalid');
+    } else {
+      input.classList.remove('is-invalid');
     }
   });
 
@@ -77,23 +76,20 @@ const app = () => {
   input.addEventListener('input', (e) => {
     state.input.url = e.target.value;
     if (state.input.url === '') {
-      state.input.isValid = true;
-      state.submitBtn.submitDisabled = true;
+      state.formState = 'empty';
     } else if (validateDublicates(state.input.url)) {
-      state.input.isValid = false;
-      state.submitBtn.submitDisabled = true;
-    } else if (validator.isURL(state.input.url)) {
-      state.input.isValid = true;
-      state.submitBtn.submitDisabled = false;
+      state.formState = 'invalid';
+    } else if (!validator.isURL(state.input.url)) {
+      state.formState = 'invalid';
     } else {
-      state.input.isValid = false;
-      state.submitBtn.submitDisabled = true;
+      state.formState = 'valid';
     }
   });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const link = `${corsOrigin}${state.input.url}`.trim();
+    state.formState = 'pending';
     axios.get(link)
       .then((feed) => {
         const dataFeed = parseFeed(feed);
@@ -101,7 +97,7 @@ const app = () => {
         state.feed.description = dataFeed.description;
         state.feed.feedLinks = [...dataFeed.itemsList, ...state.feed.feedLinks];
         state.feed.subscribedFeeds.push(state.input.url);
-        input.value = '';
+        state.formState = 'empty';
         const maxPubDate = _.max(dataFeed.itemsList.map(({ pubDate }) => pubDate));
         setTimeout(() => updatePosts(link, maxPubDate), 5000);
       })
