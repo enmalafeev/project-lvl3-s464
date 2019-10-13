@@ -44,8 +44,7 @@ const app = () => {
   };
 
   watch(state, 'formState', () => {
-    submitBtn.disabled = state.formState !== 'valid';
-    input.disabled = state.formState === 'pending';
+    submitBtn.disabled = state.formState === 'invalid';
     input.value = state.formState === 'empty' ? '' : input.value;
     if (state.formState === 'invalid') {
       input.classList.add('is-invalid');
