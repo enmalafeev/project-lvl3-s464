@@ -28,12 +28,12 @@ const app = () => {
           dublicate: 'This feed is already exist',
           invalid: 'Please enter valid RSS-feed',
           network: 'Network error, please try again',
-          }
         }
       }
-    }, (err) => {
+    }
+  }, (err) => {
     if (err) throw new Error('Something went wrong with translaton');
-  });
+});
 
   const showError = (state) => {
     const errorNode = document.getElementById('showErr');
@@ -76,12 +76,24 @@ const app = () => {
   };
 
   watch(state, 'formState', () => {
-    submitBtn.disabled = state.formState === 'invalid';
-    input.value = state.formState === 'empty' ? '' : input.value;
-    if (state.formState === 'invalid') {
-      input.classList.add('is-invalid');
-    } else {
-      input.classList.remove('is-invalid');
+    switch (state.formState) {
+      case 'invalid':
+        submitBtn.disabled = true;
+        input.classList.add('is-invalid');
+        break;
+      case 'valid':
+        submitBtn.disabled = false;
+        input.classList.remove('is-invalid');
+        break;
+      case 'empty':
+        submitBtn.disabled = true;
+        input.value = '';
+        input.classList.remove('is-invalid');
+        break;
+      default:
+        submitBtn.disabled = true;
+        input.value = '';
+        input.classList.remove('is-invalid');
     }
   });
 
