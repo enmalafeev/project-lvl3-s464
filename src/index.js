@@ -40,10 +40,10 @@ const app = () => {
     const errorText = i18next.t(state.error);
     if (errorText) {
       errorNode.textContent = errorText;
-      errorNode.classList.toggle('d-none');
+      errorNode.classList.remove('d-none');
     } else {
       errorNode.textContent = state.error;
-      errorNode.classList.toggle('d-none');
+      errorNode.classList.add('d-none');
     }
   };
 
@@ -82,8 +82,8 @@ const app = () => {
         input.classList.add('is-invalid');
         break;
       case 'valid':
-        submitBtn.disabled = false;
         input.classList.remove('is-invalid');
+        submitBtn.disabled = false;
         break;
       case 'empty':
         submitBtn.disabled = true;
@@ -138,7 +138,7 @@ const app = () => {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const link = `${corsOrigin}${state.input.url}`.trim();
-    state.formState = 'pending';
+    state.formState = 'valid';
     axios.get(link)
       .then((feed) => {
         const dataFeed = parseFeed(feed);
