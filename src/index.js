@@ -52,16 +52,16 @@ const app = () => {
 
   const validateDublicates = url => state.feed.subscribedFeeds.some(el => el === url);
 
-  const updatePosts = (feeds, lastPubDate) => {
-    axios.get(`${corsOrigin}${feeds}`)
-      .then((response) => {
-        const dataFeed = parseFeed(response);
+  const updatePosts = (link, lastPubDate) => {
+    axios.get(`${corsOrigin}${link}`)
+      .then((xml) => {
+        const dataFeed = parseFeed(xml);
         const newPost = dataFeed.itemsList.filter(item => item.pubDate > lastPubDate);
         const newPostPubDate = _.max(newPost.map(({ pubDate }) => pubDate));
         state.feed.feedLinks = [...newPost, ...state.feed.feedLinks];
-        setTimeout(() => updatePosts(feeds, newPostPubDate), 5000);
+        setTimeout(() => updatePosts(link, newPostPubDate), 5000);
       })
-      .catch(err => console.log(err));
+      .catch(() => { state.error = 'network'; });
   };
 
   watch(state, 'formState', () => {
