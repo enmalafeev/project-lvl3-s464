@@ -28,12 +28,12 @@ const app = () => {
           dublicate: 'This feed is already exist',
           invalid: 'Please enter valid RSS-feed',
           network: 'Network error, please try again',
-        }
-      }
-    }
+        },
+      },
+    },
   }, (err) => {
     if (err) throw new Error('Something went wrong with translaton');
-});
+  });
 
   const showError = (state) => {
     const errorNode = document.getElementById('showErr');
