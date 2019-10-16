@@ -32,7 +32,7 @@ const app = () => {
       },
     },
   }, (err) => {
-    if (err) throw new Error('Something went wrong with translaton');
+    if (err) throw new Error('Something went wrong with translation');
   });
 
   const showError = (state) => {
