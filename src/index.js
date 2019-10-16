@@ -2,6 +2,7 @@ import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@babel/polyfill';
 import validator from 'validator';
+import i18next from 'i18next';
 import axios from 'axios';
 import WatchJS from 'melanke-watchjs';
 import $ from 'jquery';
@@ -17,16 +18,26 @@ const app = () => {
   const { watch } = WatchJS;
   const corsOrigin = 'http://cors-anywhere.herokuapp.com/';
 
-  const errors = {
-    empty: 'Input field should not to be empty',
-    dublicate: 'This feed is already exist',
-    invalid: 'Please enter valid RSS-feed',
-    network: 'Network error, please try again',
-  };
+  i18next.init({
+    lng: 'en',
+    debug: true,
+    resources: {
+      en: {
+        translation: {
+          empty: 'Input field should not to be empty',
+          dublicate: 'This feed is already exist',
+          invalid: 'Please enter valid RSS-feed',
+          network: 'Network error, please try again',
+          }
+        }
+      }
+    }, (err) => {
+    if (err) throw new Error('Something went wrong with translaton');
+  });
 
   const showError = (state) => {
     const errorNode = document.getElementById('showErr');
-    const errorText = errors[state.error];
+    const errorText = i18next.t(state.error);
     if (errorText) {
       errorNode.textContent = errorText;
       errorNode.classList.toggle('d-none');
