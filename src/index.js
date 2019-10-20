@@ -31,12 +31,10 @@ const app = () => {
         },
       },
     },
-  }, (err) => {
-    if (err) throw new Error('Something went wrong with translation');
   });
 
-  const showError = (state) => {
-    const errorNode = document.getElementById('showErr');
+  const renderError = (state) => {
+    const errorNode = document.querySelector('div[data-error]');
     const errorText = i18next.t(state.error);
     if (errorText) {
       errorNode.textContent = errorText;
@@ -52,7 +50,7 @@ const app = () => {
       url: '',
     },
     formState: 'empty',
-    feed: {
+    feedsInfo: {
       title: '',
       description: '',
       feedLinks: [],
@@ -61,7 +59,7 @@ const app = () => {
     error: null,
   };
 
-  const validateDublicates = url => state.feed.subscribedFeeds.some(el => el === url);
+  const validateDublicates = url => state.feedsInfo.subscribedFeeds.some(el => el === url);
 
   const updatePosts = (link, lastPubDate) => {
     axios.get(`${corsOrigin}${link}`)
@@ -69,10 +67,15 @@ const app = () => {
         const dataFeed = parseFeed(xml);
         const newPost = dataFeed.itemsList.filter(item => item.pubDate > lastPubDate);
         const newPostPubDate = _.max(newPost.map(({ pubDate }) => pubDate));
-        state.feed.feedLinks = [...newPost, ...state.feed.feedLinks];
+        state.feedsInfo.feedLinks = [...newPost, ...state.feedsInfo.feedLinks];
         setTimeout(() => updatePosts(link, newPostPubDate), 5000);
       })
-      .catch(() => { state.error = 'network'; });
+      .catch((err) => {
+        if (err) {
+          state.formState = 'invalid';
+          state.error = 'network';
+        }
+      });
   };
 
   watch(state, 'formState', () => {
@@ -97,19 +100,19 @@ const app = () => {
     }
   });
 
-  watch(state.feed, 'title', () => {
+  watch(state.feedsInfo, 'title', () => {
     const feedItem = document.createElement('li');
     feedItem.classList.add('list-group-item');
-    feedItem.innerHTML = `<h3>${state.feed.title}</h3><span>${state.feed.description}</span>`;
+    feedItem.innerHTML = `<h3>${state.feedsInfo.title}</h3><span>${state.feedsInfo.description}</span>`;
     feedsNode.append(feedItem);
   });
 
-  watch(state.feed, 'feedLinks', () => {
-    const linksArr = state.feed.feedLinks.map(el => `<li class="list-group-item"><a href="${el.itemLink}">${el.itemTitle}</a><button style="display:block" class="btn btn-primary btn__desc" data-toggle="modal" data-target="#showDescription" data-description="${el.itemDescription}">Description</button></li>`).join('');
+  watch(state.feedsInfo, 'feedLinks', () => {
+    const linksArr = state.feedsInfo.feedLinks.map(el => `<li class="list-group-item"><a href="${el.itemLink}">${el.itemTitle}</a><button style="display:block" class="btn btn-primary btn__desc" data-toggle="modal" data-target="#showDescription" data-description="${el.itemDescription}">Description</button></li>`).join('');
     linksNode.innerHTML = linksArr;
   });
 
-  watch(state, 'error', () => showError(state));
+  watch(state, 'error', () => renderError(state));
 
   $('#showDescription').on('show.bs.modal', (event) => {
     const button = $(event.relatedTarget);
@@ -142,16 +145,21 @@ const app = () => {
     axios.get(link)
       .then((feed) => {
         const dataFeed = parseFeed(feed);
-        state.feed.title = dataFeed.title;
-        state.feed.description = dataFeed.description;
-        state.feed.feedLinks = [...dataFeed.itemsList, ...state.feed.feedLinks];
-        state.feed.subscribedFeeds.push(state.input.url);
+        state.feedsInfo.title = dataFeed.title;
+        state.feedsInfo.description = dataFeed.description;
+        state.feedsInfo.feedLinks = [...dataFeed.itemsList, ...state.feedsInfo.feedLinks];
+        state.feedsInfo.subscribedFeeds.push(state.input.url);
         state.formState = 'empty';
         const maxPubDate = _.max(dataFeed.itemsList.map(({ pubDate }) => pubDate));
         setTimeout(() => updatePosts(link, maxPubDate), 5000);
       })
-      .catch(() => { state.error = 'network'; });
+      .catch((err) => {
+        if (err) {
+          state.formState = 'invalid';
+          state.error = 'network';
+        }
+      });
   });
 };
-
+// http://lorem-rss.herokuapp.com/feed?unit=second&interval=5
 app();
