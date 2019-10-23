@@ -34,13 +34,13 @@ const app = () => {
   });
 
   const renderError = (state) => {
-    const errorNode = document.querySelector('div[data-error]');
-    const errorText = i18next.t(state.error);
+    const errorNode = document.querySelector('[data-error="errorText"]');
+    const errorText = i18next.t(state.errorForm);
     if (errorText) {
       errorNode.textContent = errorText;
       errorNode.classList.remove('d-none');
     } else {
-      errorNode.textContent = state.error;
+      errorNode.textContent = state.errorForm;
       errorNode.classList.add('d-none');
     }
   };
@@ -56,7 +56,7 @@ const app = () => {
       feedLinks: [],
       subscribedFeeds: [],
     },
-    error: null,
+    errorForm: null,
   };
 
   const validateDublicates = url => state.feedsInfo.subscribedFeeds.some(el => el === url);
@@ -70,11 +70,9 @@ const app = () => {
         state.feedsInfo.feedLinks = [...newPost, ...state.feedsInfo.feedLinks];
         setTimeout(() => updatePosts(link, newPostPubDate), 5000);
       })
-      .catch((err) => {
-        if (err) {
-          state.formState = 'invalid';
-          state.error = 'network';
-        }
+      .catch(() => {
+        state.formState = 'invalid';
+        state.errorForm = 'network';
       });
   };
 
@@ -112,7 +110,7 @@ const app = () => {
     linksNode.innerHTML = linksArr;
   });
 
-  watch(state, 'error', () => renderError(state));
+  watch(state, 'errorForm', () => renderError(state));
 
   $('#showDescription').on('show.bs.modal', (event) => {
     const button = $(event.relatedTarget);
@@ -125,16 +123,16 @@ const app = () => {
     state.input.url = e.target.value;
     if (state.input.url === '') {
       state.formState = 'empty';
-      state.error = 'empty';
+      state.errorForm = 'empty';
     } else if (validateDublicates(state.input.url)) {
       state.formState = 'invalid';
-      state.error = 'dublicate';
+      state.errorForm = 'dublicate';
     } else if (!validator.isURL(state.input.url)) {
       state.formState = 'invalid';
-      state.error = 'invalid';
+      state.errorForm = 'invalid';
     } else {
       state.formState = 'valid';
-      state.error = null;
+      state.errorForm = null;
     }
   });
 
@@ -153,13 +151,11 @@ const app = () => {
         const maxPubDate = _.max(dataFeed.itemsList.map(({ pubDate }) => pubDate));
         setTimeout(() => updatePosts(link, maxPubDate), 5000);
       })
-      .catch((err) => {
-        if (err) {
-          state.formState = 'invalid';
-          state.error = 'network';
-        }
+      .catch(() => {
+        state.formState = 'invalid';
+        state.errorForm = 'network';
       });
   });
 };
-// http://lorem-rss.herokuapp.com/feed?unit=second&interval=5
+
 app();
