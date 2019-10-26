@@ -35,12 +35,12 @@ const app = () => {
 
   const renderError = (state) => {
     const errorNode = document.querySelector('[data-error="errorText"]');
-    const errorText = i18next.t(state.errorForm);
+    const errorText = i18next.t(state.errorType);
     if (errorText) {
       errorNode.textContent = errorText;
       errorNode.classList.remove('d-none');
     } else {
-      errorNode.textContent = state.errorForm;
+      errorNode.textContent = state.errorType;
       errorNode.classList.add('d-none');
     }
   };
@@ -56,7 +56,7 @@ const app = () => {
       feedLinks: [],
       subscribedFeeds: [],
     },
-    errorForm: null,
+    errorType: null,
   };
 
   const validateDublicates = url => state.feedsInfo.subscribedFeeds.some(el => el === url);
@@ -72,7 +72,7 @@ const app = () => {
       })
       .catch(() => {
         state.formState = 'invalid';
-        state.errorForm = 'network';
+        state.errorType = 'network';
       });
   };
 
@@ -110,7 +110,7 @@ const app = () => {
     linksNode.innerHTML = linksArr;
   });
 
-  watch(state, 'errorForm', () => renderError(state));
+  watch(state, 'errorType', () => renderError(state));
 
   $('#showDescription').on('show.bs.modal', (event) => {
     const button = $(event.relatedTarget);
@@ -123,16 +123,16 @@ const app = () => {
     state.input.url = e.target.value;
     if (state.input.url === '') {
       state.formState = 'empty';
-      state.errorForm = 'empty';
+      state.errorType = 'empty';
     } else if (validateDublicates(state.input.url)) {
       state.formState = 'invalid';
-      state.errorForm = 'dublicate';
+      state.errorType = 'dublicate';
     } else if (!validator.isURL(state.input.url)) {
       state.formState = 'invalid';
-      state.errorForm = 'invalid';
+      state.errorType = 'invalid';
     } else {
       state.formState = 'valid';
-      state.errorForm = null;
+      state.errorType = null;
     }
   });
 
@@ -153,7 +153,7 @@ const app = () => {
       })
       .catch(() => {
         state.formState = 'invalid';
-        state.errorForm = 'network';
+        state.errorType = 'network';
       });
   });
 };
