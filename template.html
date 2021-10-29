@@ -8,27 +8,6 @@
 </head>
 
 <body>
-  <script src="send.js"></script>
-  <script type="module">
-    import { getLCP, getFCP, getCLS}  from 'https://unpkg.com/web-vitals?module';
-
-    let counter = new Counter();
-
-    const counterId = '97e1b95b-c293-4219-bb8f-233e3e65e0be';
-
-    counter.init(counterId, String(Math.random()).substr(2, 12), 'main');
-    counter.setAdditionalParams({
-      env: 'production',
-      platform: 'touch'
-    });
-
-    counter.send('load', PerformanceNavigationTiming.loadEventEnd - PerformanceNavigationTiming.loadEventStart);
-    counter.send('domLoaded', PerformanceNavigationTiming.domContentLoadedEventEnd - PerformanceNavigationTiming.domContentLoadedEventStart);
-
-    counter.send('First Contentful Paint (FCP)', getFCP(console.log));
-    counter.send('Largest Contentful Paint (LCP)', getLCP(console.log));
-    counter.send('Cumulative layout shift (CLS)', getCLS(console.log));
-  </script>
   <div class="container-fluid">
     <div class="jumbotron jumbotron-fluid">
       <h1 class="pl-4">Simple RSS-reader</h1>
